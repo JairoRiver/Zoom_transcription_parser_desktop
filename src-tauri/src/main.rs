@@ -7,14 +7,9 @@ use docx_rust::DocxFile;
 use regex::Regex;
 use std::path::Path;
 
-#[tauri::command(rename_all = "snake_case")]
+#[tauri::command(rename_all = "snake_case", async)]
 fn parser_file(path_file: String) -> String {
-    println!("I was invoked from JS, with this message: {}", path_file);
-
     let (folder_path, document_name) = extract_folder_and_name(path_file.as_str());
-    // Imprimir los resultados
-    println!("Folder Path: {}", folder_path);
-    println!("Document Name: {}", document_name);
 
     let docx = DocxFile::from_file(path_file).unwrap();
     let docx = docx.parse().unwrap();
@@ -36,11 +31,11 @@ fn parser_file(path_file: String) -> String {
         }
     }
 
-    let exit_path = Path::new(&folder_path.to_string()).join(document_name + "_output.docx");
-    println!("{:?}", exit_path);
+    let output_file_name = document_name + "_output.docx";
+    let exit_path = Path::new(&folder_path.to_string()).join(output_file_name.clone());
     docx_new.write_file(exit_path).unwrap();
 
-    "OK".into()
+    output_file_name.into()
 }
 
 fn main() {
